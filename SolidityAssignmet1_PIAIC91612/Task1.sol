@@ -18,27 +18,28 @@ contract EnrollStudent{
     mapping(uint => Student ) access_studemt; // Map the Student Record
     uint public numEnrollStudents;  // For Tracking how many students are enrolled
     event TrasferAmount(address, uint);//contract_address , TrasferAmount from EOA
-    
+    event TransactonFailed(string);
     
     
     // Funtion Will Get the new user data and Make a Transation To Contact Account
     function newStudent(string memory FirstName,string memory Last_Name,bool having_degree,Gender gender,Appearance appearance) public verifyOwner payable {
         
         address payable transferTo = payable(contract_address);
-        if(msg.value >= 2 ether){
+        if(msg.value == 2 ether){
                 transferTo.transfer(msg.value);
                 uint std_id = numEnrollStudents++;
                 access_studemt[std_id] = Student(FirstName,Last_Name,msg.sender,msg.value,gender,appearance,having_degree);
                 emit TrasferAmount(contract_address,msg.value);
         }
         else{
+                emit TransactonFailed("Unable to Process Transaction Due to Unexpected ether transfer");
                 revert();   
         }
     }
-    //Before 
+    //This modifier will run Before executing the new function 
     modifier verifyOwner(){
         
-        if( msg.sender != contract_address){
+        if( msg.sender != contract_address && msg.value >=2 ether){
             _;
         }
     }
@@ -57,6 +58,6 @@ contract EnrollStudent{
     function getAddress() public view returns(address){
             return contract_address;
     }
-    
+  
 }
 
